@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:async';
 
 void main() => runApp(new MyApp());
 
@@ -44,17 +46,40 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-
-  void _incrementCounter() {
+  static const MethodChannel methodChannel =
+      const MethodChannel("flutter_method_channel");
+  static const EventChannel eventChannel =
+      const EventChannel("flutter_event_channel");
+  void _onData(event) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _counter = event;
     });
   }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    eventChannel.receiveBroadcastStream().listen(_onData);
+  }
+  Future<Null> _incrementCounter() async {
+//    setState(() {
+//      // This call to setState tells the Flutter framework that something has
+//      // changed in this State, which causes it to rerun the build method below
+//      // so that the display can reflect the updated values. If we changed
+//      // _counter without calling setState(), then the build method would not be
+//      // called again, and so nothing would appear to happen.
+//      _counter++;
+//    });
+    var result =
+        await methodChannel.invokeMethod("_incrementCounter", _counter);
+    print(result);
+    setState(() {
+      _counter = result;
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
